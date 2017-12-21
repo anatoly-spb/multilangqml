@@ -13,7 +13,10 @@ Window {
         anchors.fill: parent
 
         Label {
+            Layout.fillWidth: true
             text: qsTr("Hello World") + globalTranslator.language
+            horizontalAlignment: Text.AlignHCenter
+            font.pixelSize: 30
         }
 
         Repeater {

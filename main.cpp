@@ -14,7 +14,9 @@ int main(int argc, char* argv[])
     qRegisterMetaType<Translator*>("Translator*");
     Translator translator;
     app.setApplicationName("multilangqml");
-    translator.load(app.applicationDirPath(), app.applicationName());
+    if (translator.load(app.applicationDirPath(), app.applicationName())) {
+        translator.setLanguage(translator.languages().first());
+    }
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty("globalTranslator", &translator);
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));

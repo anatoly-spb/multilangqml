@@ -5,6 +5,8 @@
 #include <QDir>
 #include <QFileInfo>
 
+#include <algorithm>
+
 Translator::Translator(QObject* parent)
     : QObject(parent)
 {
@@ -32,10 +34,12 @@ bool Translator::load(const QString& dir, const QString file)
     foreach (QFileInfo fileInfo, fileInfoList) {
         auto translator = std::make_unique<QTranslator>();
         if (translator->load(fileInfo.fileName(), dir)) {
-            qDebug() << "" << fileInfo.fileName() << " loaded";
+            qDebug().noquote() << fileInfo.fileName() << "loaded";
             QString language = fileInfo.baseName().remove(0, file.length() + 1);
             languages_ << language;
             translators_[language] = std::move(translator);
+        } else {
+            qDebug().noquote() << "Loading" << fileInfo.fileName() << "failed";
         }
     }
     qDebug() << "Languages " << languages_;
@@ -44,6 +48,12 @@ bool Translator::load(const QString& dir, const QString file)
 
 void Translator::setLanguage(const QString& language)
 {
-    QCoreApplication::installTranslator(translators_[language].get());
-    emit languageChanged();
+    auto it = translators_.find(language);
+    if (it != translators_.end()) {
+        std::for_each(translators_.begin(), translators_.end(), [](auto&& e) {
+            QCoreApplication::removeTranslator(e.second.get());
+        });
+        QCoreApplication::installTranslator(it->second.get());
+        emit languageChanged();
+    }
 }
